@@ -1,31 +1,47 @@
 # Makefile variables
-JARNAME := mjfx-demo.jar
+JARFILE := mjfx-demo.jar
+CLASSFILE := materialjfx/TestBed.class
 MANIFEST := manifest.txt
 
 SOURCE_DIR := materialjfx/
-SOURCES := $(shell find materialjfx/ -name "*.java"  -type f)
-CLASSES := $(shell find materialjfx/ -name "*.class" -type f)
+SOURCES := $(shell find materialjfx/ -name "*.java"  -type f -printf "%p ")
+CLASSES := $(shell find materialjfx/ -name "*.class" -type f -printf "%p ")
 MODULES := javafx.swing,javafx.controls
-MODULE_DIR := /usr/lib/jvm/default/lib/
-MODULE_DIRFX := /usr/lib/jvm/default/lib/javafx.base.jar:/usr/lib/jvm/default/lib/javafx.graphics.jar:/usr/lib/jvm/default/lib/javafx.swing.jar:/usr/lib/jvm/default/lib/javafx.controls.jar:usr/lib/jvm/default/lib/jrt-fs.jar
+MODULE_DIR != if [ -d /usr/lib/jvm/default/lib/ ]; then echo /usr/lib/jvm/default/lib/; elif [ -d /usr/lib/jvm/default-java/lib/ ]; then echo /usr/lib/jvm/default-java/lib/; fi
+MODULE_DIRFX := /usr/share/openjfx/lib/javafx.base.jar:/usr/share/openjfx/lib/javafx.graphics.jar:/usr/share/openjfx/lib/javafx.swing.jar:/usr/share/openjfx/lib/javafx.controls.jar:usr/lib/jvm/default/lib/jrt-fs.jar
 
-.PHONY: all clean
+# /usr/lib/jvm/default/lib/javafx.base.jar:/usr/lib/jvm/default/lib/javafx.graphics.jar:/usr/lib/jvm/default/lib/javafx.swing.jar:/usr/lib/jvm/default/lib/javafx.controls.jar:usr/lib/jvm/default/lib/jrt-fs.jar
 
-# java --module-path usr/lib/jvm/default/lib/javafx.base.jar:/usr/lib/jvm/default/lib/javafx.controls.jar:/usr/lib/jvm/default/lib/javafx.graphics.jar --add-modules javafx.swing,javafx.graphics,javafx.controls materialjfx/TestBed
-# java --add-modules javafx.base,javafx.swing,javafx.graphics,javafx.controls  --module-path /usr/lib/jvm/default/lib/javafx.base.jar:/usr/lib/jvm/default/lib/javafx.graphics.jar:/usr/lib/jvm/default/lib/javafx.swing.jar:/usr/lib/jvm/default/lib/javafx.controls.jar materialjfx/TestBed
+.PHONY: run build class clean
 
-# java --module-path /usr/lib/jvm/default/lib/javafx.base.jar:usr/lib/jvm/default/lib/javafx.graphics.jar:/usr/lib/jvm/default/lib/javafx.swing.jar:/usr/lib/jvm/default/lib/javafx.controls.jar:usr/lib/jvm/default/lib/jrt-fs.jar --add-modules javafx.swing,javafx.graphics,javafx.controls materialjfx/TestBed
+run: $(JARFILE)
+	@echo Running JAR file "$(JARFILE)"...
+	java --module-path $(MODULE_DIRFX) --add-modules $(MODULES) -jar $(JARFILE)
+	@echo ---
 
+jar: $(CLASSFILE)
+	@echo Generating JAR file "$(JARFILE)"...
+	jar cfm $(JARFILE) $(MANIFEST) $(SOURCE_DIR)
+	@echo ---
 
-#@java --module-path $(MODULE_DIRFX) --add-modules $(MODULES) $(CLASSNAME) -jar $(JARNAME)
-	
-all: $(CLASSFILE)
-	@jar cfm $(JARNAME) $(MANIFEST) $(SOURCE_DIR)
-	@java --module-path $(MODULE_DIRFX) --add-modules $(MODULES) -jar $(JARNAME)
+class:
+	@echo Generating classfiles...
+	javac --add-modules $(MODULES) --module-path $(MODULE_DIR):$(MODULE_DIRFX) $(SOURCES)
+	@echo ---
 
-clean: $(CLASSES)
-	@rm -rf $(CLASSES)
+clean: clean-jar clean-class clean-logs
 
-$(CLASSFILE):
-	@javac --add-modules $(MODULES) --module-path $(MODULE_DIR) $(SOURCES)
+clean-jar:
+	@echo Removing JAR file "$(JARFILE)"...
+	@rm -f $(JARFILE)
+	@echo ---
 
+clean-class:
+	@echo Removing classfiles...
+	@./clean-classfiles.sh
+	@echo ---
+
+clean-logs:
+	@echo Deleting logs...
+	@rm -f ./*.log
+	@echo ---

@@ -4,15 +4,20 @@ An attempt to replicate Material Design elements into JavaFX.
 
 ## Setup
 
-Install dependencies:
+Install dependencies on Arch Linux:
+```
+# pacman -Syu jre-openjdk java-openjfx
+```
+
+Debian:
 
 ```
-sudo pacman -Syu jre-openjdk java-openjfx
+# sudo apt install openjdk-17-jdk openjfx
 ```
 
 Run the demo:
 
 ```
-cd materialjfx/
-make
+$ cd materialjfx/
+$ make clean class jar run
 ```
